@@ -1,0 +1,2 @@
+# Worldr desktop plugins
+
