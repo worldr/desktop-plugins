@@ -1,4 +1,4 @@
-module github.com/worldr/desktop-plugins/sqflite_sqlcipher
+module github.com/worldr/desktop-plugins/%%PLUGIN_NAME%%
 
 go 1.13
 
