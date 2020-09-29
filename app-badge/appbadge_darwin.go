@@ -46,7 +46,7 @@ func (*AppBadgeDarwin) SetBadge(value int) error {
 	if r1 != 0 {
 		return newError("Failed to set window title")
 	}
-	r2 := C.platformSetBadge(value)
+	r2 := C.platformSetBadge(C.int(value))
 	if r2 != 0 {
 		return newError("Failed to set app badge value")
 	}
