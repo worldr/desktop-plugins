@@ -16,8 +16,8 @@ platformGetWindowTitle() {
   return window.title;
 }
 NSNumber*
-platformSetBadge(int value) {
-	NSString* str = [NSString stringWithFormat:@"%i", value];
+platformSetBadge(int* value) {
+	NSString* str = [NSString stringWithFormat:@"%i", *value];
 	NSDockTile* tile = [[NSApplication sharedApplication] dockTile];
 	[tile setBadgeLabel:str];
   return [NSNumber numberWithInt:0];
@@ -46,7 +46,8 @@ func (*AppBadgeDarwin) SetBadge(value int) error {
 	if r1 != 0 {
 		return newError("Failed to set window title")
 	}
-	r2 := C.platformSetBadge(C.int(value))
+	v := C.int(value)
+	r2 := C.platformSetBadge(&v)
 	if r2 != 0 {
 		return newError("Failed to set app badge value")
 	}
