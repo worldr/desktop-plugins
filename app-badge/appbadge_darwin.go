@@ -1,8 +1,14 @@
 package appbadge
 
+/*
+#include "platform/darwin.h"
+*/
+import "C"
+
 type AppBadgeDarwin struct{}
 
 func (*AppBadgeDarwin) SetBadge(value int) error {
+	SetWindowTitle("Worldr")
 	return ErrUnsupportedPlatform
 }
 
