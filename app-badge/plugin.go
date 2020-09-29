@@ -8,9 +8,10 @@ import (
 	"github.com/go-flutter-desktop/go-flutter/plugin"
 )
 
-const channelName = "com.worldr.desktop.plugins.app_badge"
+const channelName = "com.worldr.desktop.plugins.appbadge"
 const (
-	METHOD_SET = "setBadge"
+	METHOD_SET   = "setBadge"
+	METHOD_CLEAR = "clearBadge"
 )
 
 type AppBadgePlugin struct{}
@@ -21,6 +22,7 @@ var errorFormat string = "[badge] %v"
 func (p *AppBadgePlugin) InitPlugin(messenger plugin.BinaryMessenger) error {
 	channel := plugin.NewMethodChannel(messenger, channelName, plugin.StandardMethodCodec{})
 	channel.HandleFunc(METHOD_SET, p.setBadge)
+	channel.HandleFunc(METHOD_CLEAR, p.clearBadge)
 	return nil
 }
 
@@ -30,9 +32,13 @@ func (p *AppBadgePlugin) setBadge(args interface{}) (reply interface{}, err erro
 		return nil, errors.New("invalid args")
 	}
 	if counter <= 0 {
-		return nil, nil
+		return nil, Api.ClearBadge()
 	}
-	return nil, nil
+	return nil, Api.SetBadge(counter)
+}
+
+func (p *AppBadgePlugin) clearBadge(args interface{}) (reply interface{}, err error) {
+	return nil, Api.ClearBadge()
 }
 
 func newError(message string) error {
