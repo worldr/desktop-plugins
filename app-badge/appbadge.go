@@ -15,7 +15,7 @@ type AppBadge interface {
 
 var ErrUnsupportedPlatform = errors.New("Unsupported platform: " + runtime.GOOS)
 var ErrNotImplemented = errors.New("Not implemented for platform: " + runtime.GOOS)
-var api AppBadge = &AppBadgeFallback{}
+var Api AppBadge = &AppBadgeFallback{}
 
 type AppBadgeFallback struct{}
 

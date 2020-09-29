@@ -11,5 +11,5 @@ func (*AppBadgeWindows) ClearBadge() error {
 }
 
 func init() {
-	api = &AppBadgeWindows{}
+	Api = &AppBadgeWindows{}
 }

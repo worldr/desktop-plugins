@@ -11,5 +11,5 @@ func (*AppBadgeLinux) ClearBadge() error {
 }
 
 func init() {
-	api = &AppBadgeLinux{}
+	Api = &AppBadgeLinux{}
 }

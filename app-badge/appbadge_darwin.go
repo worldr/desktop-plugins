@@ -8,11 +8,11 @@ import "C"
 type AppBadgeDarwin struct{}
 
 func (*AppBadgeDarwin) SetBadge(value int) error {
-	r1 := SetWindowTitle(formatWindowTitle(GetWindowTitle(), value))
+	r1 := PlatformSetWindowTitle(formatWindowTitle(PlatformGetWindowTitle(), value))
 	if r1 != 0 {
 		return newError("Failed to set window title")
 	}
-	r2 := SetBadgeValue(value)
+	r2 := PlatformSetBadge(value)
 	if r2 != 0 {
 		return newError("Failed to set app badge value")
 	}
@@ -24,5 +24,5 @@ func (*AppBadgeDarwin) ClearBadge() error {
 }
 
 func init() {
-	api = &AppBadgeDarwin{}
+	Api = &AppBadgeDarwin{}
 }
