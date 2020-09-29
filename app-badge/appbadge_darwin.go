@@ -6,18 +6,18 @@ package appbadge
 
 #import <Cocoa/Cocoa.h>
 int
-PlatformSetWindowTitle(NSString* value) {
+platformSetWindowTitle(NSString* value) {
 	NSWindow *window = [[[NSApplication sharedApplication] windows] objectAtIndex:0];
 	window.title = value;
   return 0;
 }
 NSString*
-PlatformGetWindowTitle() {
+platformGetWindowTitle() {
 	NSWindow *window = [[[NSApplication sharedApplication] windows] objectAtIndex:0];
   return window.title;
 }
 int
-PlatformSetBadge(int value) {
+platformSetBadge(int value) {
 	NSString* str = [NSString stringWithFormat:@"%i", value];
 	NSDockTile* tile = [[NSApplication sharedApplication] dockTile];
 	[tile setBadgeLabel:str];
@@ -29,19 +29,19 @@ import "C"
 type AppBadgeDarwin struct{}
 
 func (*AppBadgeDarwin) SetBadge(value int) error {
-	r1 := PlatformSetWindowTitle(formatWindowTitle(PlatformGetWindowTitle(), value))
+	r1 := platformSetWindowTitle(formatWindowTitle(platformGetWindowTitle(), value))
 	if r1 != 0 {
 		return newError("Failed to set window title")
 	}
-	r2 := PlatformSetBadge(value)
+	r2 := platformSetBadge(value)
 	if r2 != 0 {
 		return newError("Failed to set app badge value")
 	}
 	return nil
 }
 
-func (*AppBadgeDarwin) ClearBadge() error {
-	return SetBadge(0)
+func (me *AppBadgeDarwin) ClearBadge() error {
+	return me.SetBadge(0)
 }
 
 func init() {
