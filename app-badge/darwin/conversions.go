@@ -20,4 +20,4 @@ func GoString(s *C.NSString) (string, *C.char) {
 }
 
 // NSNumber -> Go int
-func GoInt(i *C.NSNumber) int { return int(C.nsnumber2int(i)) }
+func GoInt(i *C.NSNumber) int { return int(C.nsnumber2cint(i)) }
