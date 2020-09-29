@@ -1,6 +1,8 @@
 package appbadge
 
 /*
+#cgo CFLAGS: -x objective-c
+#cgo LDFLAGS: -framework Cocoa
 #include "platforms/darwin.h"
 */
 import "C"

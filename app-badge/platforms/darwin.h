@@ -1,5 +1,3 @@
-#cgo CFLAGS: -x objective-c
-#cgo LDFLAGS: -framework Cocoa
 #import <Cocoa/Cocoa.h>
 int
 PlatformSetWindowTitle(String value) {
