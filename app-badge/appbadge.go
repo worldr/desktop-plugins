@@ -2,7 +2,10 @@ package appbadge
 
 import (
 	"errors"
+	"fmt"
 	"runtime"
+	"strconv"
+	"strings"
 )
 
 type AppBadge interface {
@@ -22,4 +25,17 @@ func (*AppBadgeFallback) SetBadge(value int) error {
 
 func (*AppBadgeFallback) ClearBadge() error {
 	return ErrUnsupportedPlatform
+}
+
+func formatWindowTitle(current string, badgeValue int) string {
+	t := current
+	if open := strings.Index(current, "("); open == 0 {
+		if close := strings.Index(current, ") "); close > 0 {
+			t = current[0 : close+2]
+		}
+	}
+	if badgeValue > 0 {
+		return fmt.Sprintf("(%v) %v", strconv.Itoa(badgeValue), t)
+	}
+	return t
 }
