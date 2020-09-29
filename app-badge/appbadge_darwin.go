@@ -3,7 +3,6 @@ package appbadge
 /*
 #cgo CFLAGS: -x objective-c
 #cgo LDFLAGS: -framework Cocoa
-
 #import <Cocoa/Cocoa.h>
 int
 platformSetWindowTitle(NSString* value) {
@@ -29,11 +28,11 @@ import "C"
 type AppBadgeDarwin struct{}
 
 func (*AppBadgeDarwin) SetBadge(value int) error {
-	r1 := platformSetWindowTitle(formatWindowTitle(platformGetWindowTitle(), value))
+	r1 := C.platformSetWindowTitle(formatWindowTitle(C.platformGetWindowTitle(), value))
 	if r1 != 0 {
 		return newError("Failed to set window title")
 	}
-	r2 := platformSetBadge(value)
+	r2 := C.platformSetBadge(value)
 	if r2 != 0 {
 		return newError("Failed to set app badge value")
 	}
