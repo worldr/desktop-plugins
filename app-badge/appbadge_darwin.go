@@ -1,7 +1,7 @@
 package appbadge
 
 /*
-#include "platform/darwin.h"
+#include "platforms/darwin.h"
 */
 import "C"
 
