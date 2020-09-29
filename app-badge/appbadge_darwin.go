@@ -34,7 +34,8 @@ type AppBadgeDarwin struct{}
 
 func (*AppBadgeDarwin) SetBadge(value int) error {
 	// get current title
-	gs, cs1 := darwin.GoString(C.platformGetWindowTitle())
+	ns := C.platformGetWindowTitle()
+	gs, cs1 := darwin.GoString(ns)
 	defer C.free(unsafe.Pointer(cs1))
 
 	// create new title with counter
