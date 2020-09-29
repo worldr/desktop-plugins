@@ -5,14 +5,14 @@ package appbadge
 #cgo LDFLAGS: -framework Cocoa
 #import <Cocoa/Cocoa.h>
 void
-platformSetWindowTitle(*char value) {
-	NSString *str = [NSString stringWithUTF8String:value];
-	NSWindow *window = [[[NSApplication sharedApplication] windows] objectAtIndex:0];
+platformSetWindowTitle(char* value) {
+	NSString* str = [NSString stringWithUTF8String:value];
+	NSWindow* window = [[[NSApplication sharedApplication] windows] objectAtIndex:0];
 	window.title = str;
 }
 NSString*
 platformGetWindowTitle() {
-	NSWindow *window = [[[NSApplication sharedApplication] windows] objectAtIndex:0];
+	NSWindow* window = [[[NSApplication sharedApplication] windows] objectAtIndex:0];
   return window.title;
 }
 NSNumber*
