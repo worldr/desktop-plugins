@@ -41,8 +41,6 @@ platformSetBadge(int* value) {
 */
 import "C"
 import (
-	"fmt"
-	"reflect"
 	"unsafe"
 )
 
@@ -50,22 +48,7 @@ type AppBadgeDarwin struct{}
 
 func (*AppBadgeDarwin) SetBadge(value int32) error {
 	// get current title
-	a := C.platformGetWindowTitle()
-	fmt.Println(fmt.Sprintf("-- type %T", a))
-	fmt.Println(fmt.Sprintf("-- reflect %v", reflect.TypeOf(a)))
-	fmt.Println(fmt.Sprintf("-- reflect %v", reflect.TypeOf(a).String()))
-	fmt.Println(fmt.Sprintf("-- value %v", a))
-
-	fmt.Println(fmt.Sprintf("-- type %T", *a))
-	fmt.Println(fmt.Sprintf("-- reflect %v", reflect.TypeOf(*a)))
-	fmt.Println(fmt.Sprintf("-- reflect %v", reflect.TypeOf(*a).String()))
-	fmt.Println(fmt.Sprintf("-- value %v", *a))
-
-	gs := C.GoString(a)
-	fmt.Println(fmt.Sprintf("-- type %T", gs))
-	fmt.Println(fmt.Sprintf("-- reflect %v", reflect.TypeOf(gs)))
-	fmt.Println(fmt.Sprintf("-- reflect %v", reflect.TypeOf(gs).String()))
-	fmt.Println(fmt.Sprintf("-- value %v", gs))
+	gs := C.GoString(C.platformGetWindowTitle())
 
 	// create new title with counter
 	cs2 := C.CString(formatWindowTitle(gs, value))
