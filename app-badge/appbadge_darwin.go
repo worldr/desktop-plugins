@@ -34,7 +34,12 @@ platformGetWindowTitle() {
 
 void
 platformSetBadge(int* value) {
-	NSString* str = [NSString stringWithFormat:@"%i", *value];
+	NSString* str;
+	if (*value == 0) {
+ 		str = @"";
+	} else {
+		str = [NSString stringWithFormat:@"%i", *value];
+	}
 	NSDockTile* tile = [[NSApplication sharedApplication] dockTile];
 	[tile setBadgeLabel:str];
 }
