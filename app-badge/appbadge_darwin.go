@@ -37,10 +37,15 @@ type AppBadgeDarwin struct{}
 func (*AppBadgeDarwin) SetBadge(value int32) error {
 	// get current title
 	a := C.platformGetWindowTitle()
-	fmt.Println("-- type %T", *a)
-	fmt.Println("-- reflect %v", reflect.TypeOf(*a).String())
-	fmt.Println("-- reflect %v", reflect.TypeOf(*a))
-	fmt.Println("-- value %v", *a)
+	fmt.Println(fmt.Sprintf("-- type %T", a))
+	fmt.Println(fmt.Sprintf("-- reflect %v", reflect.TypeOf(a)))
+	fmt.Println(fmt.Sprintf("-- reflect %v", reflect.TypeOf(a).String()))
+	fmt.Println(fmt.Sprintf("-- value %v", a))
+
+	fmt.Println(fmt.Sprintf("-- type %T", *a))
+	fmt.Println(fmt.Sprintf("-- reflect %v", reflect.TypeOf(*a)))
+	fmt.Println(fmt.Sprintf("-- reflect %v", reflect.TypeOf(*a).String()))
+	fmt.Println(fmt.Sprintf("-- value %v", *a))
 	gs, cs1 := darwin.GoString(a)
 	defer C.free(unsafe.Pointer(cs1))
 
