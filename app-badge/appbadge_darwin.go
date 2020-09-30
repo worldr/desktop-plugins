@@ -5,6 +5,20 @@ package appbadge
 #cgo LDFLAGS: -framework Cocoa
 #import <Cocoa/Cocoa.h>
 
+const char*
+nsString2cString(NSString* ns) {
+    if (ns == NULL) { return NULL; }
+    const char* cs = [ns UTF8String];
+    return cs;
+}
+
+NSString*
+cString2nsString(char* cs) {
+    if (cs == NULL) { return NULL; }
+    NSString* ns = [NSString stringWithUTF8String:cs];
+    return ns;
+}
+
 void
 platformSetWindowTitle(char* value) {
 	NSString* str = cString2nsString(value);
@@ -23,20 +37,6 @@ platformSetBadge(int* value) {
 	NSString* str = [NSString stringWithFormat:@"%i", *value];
 	NSDockTile* tile = [[NSApplication sharedApplication] dockTile];
 	[tile setBadgeLabel:str];
-}
-
-const char*
-nsString2cString(NSString* ns) {
-    if (ns == NULL) { return NULL; }
-    const char* cs = [ns UTF8String];
-    return cs;
-}
-
-NSString*
-cString2nsString(char* cs) {
-    if (cs == NULL) { return NULL; }
-    NSString* ns = [NSString stringWithUTF8String:cs];
-    return ns;
 }
 */
 import "C"
