@@ -31,7 +31,7 @@ func formatWindowTitle(current string, badgeValue int32) string {
 	t := current
 	if open := strings.Index(current, "("); open == 0 {
 		if close := strings.Index(current, ") "); close > 0 {
-			t = current[0 : close+2]
+			t = current[close+2:]
 		}
 	}
 	if badgeValue > 0 {
