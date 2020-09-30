@@ -36,7 +36,7 @@ type AppBadgeDarwin struct{}
 
 func (*AppBadgeDarwin) SetBadge(value int32) error {
 	// get current title
-	var a *_Ctype_struct_NSString = C.platformGetWindowTitle()
+	var a *appbadge._Ctype_struct_NSString = C.platformGetWindowTitle()
 	fmt.Println(fmt.Sprintf("-- type %T", a))
 	fmt.Println(fmt.Sprintf("-- reflect %v", reflect.TypeOf(a)))
 	fmt.Println(fmt.Sprintf("-- reflect %v", reflect.TypeOf(a).String()))
