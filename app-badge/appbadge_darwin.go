@@ -36,8 +36,8 @@ type AppBadgeDarwin struct{}
 func (*AppBadgeDarwin) SetBadge(value int32) error {
 	// get current title
 	a := C.platformGetWindowTitle()
-	fmt.Println("-- %T", a)
-	fmt.Println("-- %v", a)
+	fmt.Println("-- %T", *a)
+	fmt.Println("-- %v", *a)
 	gs, cs1 := darwin.GoString(a)
 	defer C.free(unsafe.Pointer(cs1))
 
