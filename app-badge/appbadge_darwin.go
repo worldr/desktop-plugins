@@ -44,8 +44,6 @@ import (
 	"fmt"
 	"reflect"
 	"unsafe"
-
-	"github.com/worldr/desktop-plugins/app-badge/darwin"
 )
 
 type AppBadgeDarwin struct{}
@@ -76,11 +74,9 @@ func (*AppBadgeDarwin) SetBadge(value int32) error {
 	// set new title
 	C.platformSetWindowTitle(cs2)
 
-	v := C.int(value)
-	r2 := darwin.GoInt(C.platformSetBadge(&v))
-	if r2 != 0 {
-		return newError("Failed to set app badge value")
-	}
+	// Set badge number
+	C.platformSetBadge(&v)
+
 	return nil
 }
 
