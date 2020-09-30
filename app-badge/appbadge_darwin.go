@@ -26,6 +26,7 @@ platformSetBadge(int* value) {
 import "C"
 import (
 	"fmt"
+	"reflect"
 	"unsafe"
 
 	"github.com/worldr/desktop-plugins/app-badge/darwin"
@@ -36,8 +37,10 @@ type AppBadgeDarwin struct{}
 func (*AppBadgeDarwin) SetBadge(value int32) error {
 	// get current title
 	a := C.platformGetWindowTitle()
-	fmt.Println("-- %T", *a)
-	fmt.Println("-- %v", *a)
+	fmt.Println("-- type %T", *a)
+	fmt.Println("-- reflect %v", reflect.TypeOf(*a).String())
+	fmt.Println("-- reflect %v", reflect.TypeOf(*a))
+	fmt.Println("-- value %v", *a)
 	gs, cs1 := darwin.GoString(a)
 	defer C.free(unsafe.Pointer(cs1))
 
