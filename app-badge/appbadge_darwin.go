@@ -41,12 +41,21 @@ platformSetBadge(int* value) {
 */
 import "C"
 import (
+	"fmt"
 	"unsafe"
 )
 
 type AppBadgeDarwin struct{}
 
-func (*AppBadgeDarwin) SetBadge(value int32) error {
+func (*AppBadgeDarwin) SetBadge(value int32) (err error) {
+	// Report a panic when the function finishes
+	defer func() {
+		if r := recover(); r != nil {
+			err = r.(error)
+			newError(fmt.Sprintf("Panic: %+v", r))
+		}
+	}()
+
 	// get current title
 	gs := C.GoString(C.platformGetWindowTitle())
 
