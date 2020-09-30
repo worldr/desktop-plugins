@@ -12,17 +12,17 @@ import "unsafe"
 // NSString -> C string
 // NOTE: free memory manually on the Go side!
 // defer C.free(unsafe.Pointer(cs))
-func cString(s *C.NSString) *C.char {
+func cString(s *_Ctype_struct_NSString) *C.char {
 	return C.nsstring2cstring(unsafe.Pointer(s))
 }
 
 // NSString -> Go string
-func GoString(s *C.NSString) (string, *C.char) {
+func GoString(s *_Ctype_struct_NSString) (string, *C.char) {
 	str := cString(s)
 	return C.GoString(str), str
 }
 
 // NSNumber -> Go int
-func GoInt(i *C.NSNumber) int {
+func GoInt(i *_Ctype_struct_NSNumber) int {
 	return int(C.nsnumber2cint(unsafe.Pointer(i)))
 }
