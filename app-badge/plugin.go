@@ -2,6 +2,7 @@ package appbadge
 
 import (
 	"errors"
+	"fmt"
 	"log"
 
 	flutter "github.com/go-flutter-desktop/go-flutter"
@@ -27,6 +28,7 @@ func (p *AppBadgePlugin) InitPlugin(messenger plugin.BinaryMessenger) error {
 }
 
 func (p *AppBadgePlugin) setBadge(args interface{}) (reply interface{}, err error) {
+	fmt.Println("ARGS", args)
 	counter, ok := args.(int)
 	if !ok {
 		return nil, errors.New("invalid args")
