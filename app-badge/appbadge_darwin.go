@@ -26,7 +26,7 @@ platformSetWindowTitle(char* value) {
 	window.title = str;
 }
 
-char*
+const char*
 platformGetWindowTitle() {
 	NSWindow* window = [[[NSApplication sharedApplication] windows] objectAtIndex:0];
   return nsString2cString(window.title);
@@ -75,6 +75,7 @@ func (*AppBadgeDarwin) SetBadge(value int32) error {
 	C.platformSetWindowTitle(cs2)
 
 	// Set badge number
+	v := C.int(value)
 	C.platformSetBadge(&v)
 
 	return nil
