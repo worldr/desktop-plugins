@@ -32,7 +32,7 @@ import (
 
 type AppBadgeDarwin struct{}
 
-func (*AppBadgeDarwin) SetBadge(value int) error {
+func (*AppBadgeDarwin) SetBadge(value int32) error {
 	// get current title
 	gs, cs1 := darwin.GoString(C.platformGetWindowTitle())
 	defer C.free(unsafe.Pointer(cs1))
