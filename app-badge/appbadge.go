@@ -35,7 +35,11 @@ func formatWindowTitle(current string, badgeValue int) string {
 		}
 	}
 	if badgeValue > 0 {
-		return fmt.Sprintf("(%v) %v", strconv.Itoa(badgeValue), t)
+		if badgeValue > 99 {
+			return fmt.Sprintf("(99+) %v", t)
+		} else {
+			return fmt.Sprintf("(%v) %v", strconv.Itoa(badgeValue), t)
+		}
 	}
 	return t
 }
