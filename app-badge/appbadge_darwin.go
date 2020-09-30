@@ -25,6 +25,7 @@ platformSetBadge(int* value) {
 */
 import "C"
 import (
+	"fmt"
 	"unsafe"
 
 	"github.com/worldr/desktop-plugins/app-badge/darwin"
@@ -34,7 +35,10 @@ type AppBadgeDarwin struct{}
 
 func (*AppBadgeDarwin) SetBadge(value int32) error {
 	// get current title
-	gs, cs1 := darwin.GoString(C.platformGetWindowTitle())
+	a := C.platformGetWindowTitle()
+	fmt.Println("-- %T", a)
+	fmt.Println("-- %v", a)
+	gs, cs1 := darwin.GoString(a)
 	defer C.free(unsafe.Pointer(cs1))
 
 	// create new title with counter
