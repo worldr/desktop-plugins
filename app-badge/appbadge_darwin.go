@@ -37,6 +37,8 @@ platformSetBadge(int* value) {
 	NSString* str;
 	if (*value == 0) {
  		str = @"";
+	} else if (*value > 99) {
+		str = @"99+";
 	} else {
 		str = [NSString stringWithFormat:@"%i", *value];
 	}
