@@ -2,7 +2,7 @@ package appbadge
 
 type AppBadgeLinux struct{}
 
-func (*AppBadgeLinux) SetBadge(value int) error {
+func (*AppBadgeLinux) SetBadge(value int32) error {
 	return ErrNotImplemented
 }
 
