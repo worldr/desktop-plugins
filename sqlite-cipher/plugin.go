@@ -27,7 +27,8 @@ import (
 	_ "github.com/xeodou/go-sqlcipher"
 )
 
-const channelName = "com.worldr.desktop.plugins.sqlitecipher"
+// This name is required for cross-platform core code to work
+const channelName = "com.tekartik.sqflite"
 
 const errorFormat = "[SQFLITE] %v\n"
 
