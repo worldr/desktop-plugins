@@ -1,4 +1,4 @@
-module github.com/worldr/desktop-plugins/sqlite-sqlcipher
+module github.com/worldr/desktop-plugins/sqlite-cipher
 
 go 1.14
 
