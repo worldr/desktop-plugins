@@ -1,6 +1,6 @@
 module github.com/worldr/desktop-plugins/sqlite-sqlcipher
 
-go 1.12
+go 1.14
 
 require (
 	github.com/go-flutter-desktop/go-flutter v0.42.0
