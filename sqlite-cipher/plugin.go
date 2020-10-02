@@ -279,7 +279,7 @@ func (p *SqflitePlugin) handleBatch(arguments interface{}) (reply interface{}, e
 	}
 	args, ok := arguments.(map[string]interface{})
 	if !ok {
-		return nil, errors.New("invalid args")
+		return nil, errors.New(fmt.Sprintf("invalid args: %+v", arguments))
 	}
 	ioperations, ok := args[PARAM_OPERATIONS]
 	if !ok {
