@@ -16,6 +16,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"reflect"
 	"runtime"
 	"strings"
 	"sync"
@@ -279,7 +280,8 @@ func (p *SqflitePlugin) handleBatch(arguments interface{}) (reply interface{}, e
 	}
 	args, ok := arguments.(map[string]interface{})
 	if !ok {
-		return nil, errors.New(fmt.Sprintf("invalid args: %+v", arguments))
+		fmt.Println("--- %v", reflect.TypeOf(arguments).String())
+		return nil, errors.New(fmt.Sprintf("invalid args %T: %+v", arguments, arguments))
 	}
 	ioperations, ok := args[PARAM_OPERATIONS]
 	if !ok {
