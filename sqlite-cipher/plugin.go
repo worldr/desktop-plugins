@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"path"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -66,9 +65,6 @@ const (
 	ERROR_BAD_PARAM       = "bad_param"       // internal only
 	ERROR_OPEN_FAILED     = "open_failed"     // msg
 	ERROR_DATABASE_CLOSED = "database_closed" // msg
-
-	// memory database path
-	MEMORY_DATABASE_PATH = ":memory:"
 )
 
 type SqflitePlugin struct {
@@ -191,7 +187,7 @@ func (p *SqflitePlugin) handleOpenDatabase(arguments interface{}) (reply interfa
 	var ok bool
 	var args map[interface{}]interface{}
 	if args, ok = arguments.(map[interface{}]interface{}); !ok {
-		return nil, newError("invalid arguments")
+		return nil, newError(fmt.Sprintf("invalid arguments: %T", arguments))
 	}
 
 	var dbpath string
@@ -204,52 +200,29 @@ func (p *SqflitePlugin) handleOpenDatabase(arguments interface{}) (reply interfa
 
 	// check that the path contains parameters
 	chunks := strings.Split(dbpath, "?")
-	dbParams := ""
-	if len(chunks) > 1 {
-		dbParams = "&" + chunks[1]
+	if len(chunks) != 2 {
+		return nil, newError("db parameters are missing")
 	}
+	dbParams := chunks[1]
 	dbPathWithoutParams := chunks[0]
 
-	// check that the path contains _key_param_ and it is not empty
-	chunks = strings.Split(dbPathWithoutParams, "_key_param_")
-	if len(chunks) != 2 {
+	// check that the path contains _key and it is not empty
+	chunks = strings.Split(dbParams, "_key=")
+	if len(chunks) != 2 || len(chunks[1]) == 0 {
 		return nil, newError("db key is missing")
 	}
-	dbKey := "?_key=" + chunks[1]
-	dbPathWithoutParams = chunks[0]
 
 	log.Println("db path without params =", dbPathWithoutParams)
 
-	var readOnly bool
-	var singleInstance bool
-
-	if rdo, ok := args[PARAM_READ_ONLY]; ok {
-		readOnly = rdo.(bool)
-	}
-	if si, ok := args[PARAM_SINGLE_INSTANCE]; ok {
-		singleInstance = si.(bool) && MEMORY_DATABASE_PATH != dbpath
-	}
-	if readOnly {
-		log.Printf(errorFormat, "readonly not supported")
-	}
-	if MEMORY_DATABASE_PATH != dbPathWithoutParams {
-		err = os.MkdirAll(path.Dir(dbPathWithoutParams), 0755)
-		if err != nil {
-			return nil, newError(err.Error())
-		}
-	}
-	if singleInstance {
-		dbId, ok := p.getDatabaseByPath(dbPathWithoutParams)
-		if ok {
-			return map[interface{}]interface{}{
-				PARAM_ID:        dbId,
-				PARAM_RECOVERED: true,
-			}, nil
-		}
+	dbId, ok := p.getDatabaseByPath(dbPathWithoutParams)
+	if ok {
+		return map[interface{}]interface{}{
+			PARAM_ID:        dbId,
+			PARAM_RECOVERED: true,
+		}, nil
 	}
 
 	// dbpath is supposed to contain _key parameter, or the db will fail to open
-	dbpath = dbPathWithoutParams + dbKey + dbParams
 	var engine *sql.DB
 	engine, err = sql.Open("sqlite3", dbpath)
 	if err != nil {
@@ -468,9 +441,7 @@ func (p *SqflitePlugin) handleDatabaseExists(arguments interface{}) (reply inter
 
 func (p *SqflitePlugin) handleDeleteDatabase(arguments interface{}) (reply interface{}, err error) {
 	if dbPath, ok := arguments.(string); ok {
-		if dbPath != MEMORY_DATABASE_PATH {
-			err = os.Remove(dbPath)
-		}
+		err = os.Remove(dbPath)
 	}
 	return nil, err
 }
@@ -496,9 +467,6 @@ func (p *SqflitePlugin) getDatabase(arguments interface{}) (int32, *sql.DB, erro
 }
 
 func (p *SqflitePlugin) getDatabaseByPath(dbPath string) (int32, bool) {
-	if dbPath == MEMORY_DATABASE_PATH {
-		return -1, false
-	}
 	p.Lock()
 	defer p.Unlock()
 	for id, pt := range p.databasePaths {
