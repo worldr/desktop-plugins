@@ -1,11 +1,5 @@
-// Package sqflite provides an implementation of flutter sqflite plugin for desktop.
-//
-// Extra dependencies:
-//   github.com/go-flutter-desktop/go-flutter
-//   github.com/go-flutter-desktop/go-flutter/plugin
-//	 github.com/mattn/go-sqlite3
-//   github.com/mitchellh/go-homedir
-//   github.com/pkg/errors
+// Package sqflite provides an implementation of flutter sqflite plugin for desktop
+// and uses sqlcipher for transparent db ancryption.
 
 package sqlitecipher
 
@@ -16,7 +10,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"reflect"
 	"runtime"
 	"strings"
 	"sync"
@@ -28,7 +21,6 @@ import (
 	_ "github.com/xeodou/go-sqlcipher"
 )
 
-// This name is required for cross-platform core code to work
 const channelName = "com.tekartik.sqflite"
 
 const errorFormat = "[SQFLITE] %v\n"
@@ -109,10 +101,10 @@ func NewSqflitePlugin(vendor, appName string) *SqflitePlugin {
 
 func (p *SqflitePlugin) InitPlugin(messenger plugin.BinaryMessenger) error {
 	if p.VendorName == "" {
-		return errors.New("SqflitePlugin.VendorName must be set")
+		return newError("SqflitePlugin.VendorName must be set")
 	}
 	if p.ApplicationName == "" {
-		return errors.New("SqflitePlugin.ApplicationName must be set")
+		return newError("SqflitePlugin.ApplicationName must be set")
 	}
 
 	switch runtime.GOOS {
@@ -138,9 +130,7 @@ func (p *SqflitePlugin) InitPlugin(messenger plugin.BinaryMessenger) error {
 	}
 	p.userConfigFolder = filepath.Join(p.userConfigFolder, p.VendorName, p.ApplicationName)
 
-	if p.debug {
-		log.Println("home dir=", p.userConfigFolder)
-	}
+	log.Println("home dir=", p.userConfigFolder)
 
 	channel := plugin.NewMethodChannel(messenger, channelName, plugin.StandardMethodCodec{})
 	channel.HandleFunc(METHOD_INSERT, p.handleInsert)
@@ -195,41 +185,61 @@ func (p *SqflitePlugin) handleCloseDatabase(arguments interface{}) (reply interf
 	return nil, err
 }
 
+// Opens the db and passes the options.
+// arguments is a map of options, see PARAM_* constants.
 func (p *SqflitePlugin) handleOpenDatabase(arguments interface{}) (reply interface{}, err error) {
-	// map[interface {}]interface {}{"path":"/Users/kael/Library/Application Support/libCachedImageData.db", "singleInstance":true}
 	var ok bool
 	var args map[interface{}]interface{}
 	if args, ok = arguments.(map[interface{}]interface{}); !ok {
-		return nil, errors.New("invalid arguments")
+		return nil, newError("invalid arguments")
 	}
+
 	var dbpath string
-	var readOnly bool
-	var singleInstance bool
 	if dpath, ok := args[PARAM_PATH]; ok {
 		dbpath = dpath.(string)
 	}
+	if dbpath == "" {
+		return nil, newError("dbpath is empty")
+	}
+
+	// check that the path contains parameters
+	chunks := strings.Split(dbpath, "?")
+	dbParams := ""
+	if len(chunks) > 1 {
+		dbParams = "&" + chunks[1]
+	}
+	dbPathWithoutParams := chunks[0]
+
+	// check that the path contains _key_param_ and it is not empty
+	chunks = strings.Split(dbPathWithoutParams, "_key_param_")
+	if len(chunks) != 2 {
+		return nil, newError("db key is missing")
+	}
+	dbKey := "?_key=" + chunks[1]
+	dbPathWithoutParams = chunks[0]
+
+	log.Println("db path without params =", dbPathWithoutParams)
+
+	var readOnly bool
+	var singleInstance bool
+
 	if rdo, ok := args[PARAM_READ_ONLY]; ok {
 		readOnly = rdo.(bool)
 	}
 	if si, ok := args[PARAM_SINGLE_INSTANCE]; ok {
 		singleInstance = si.(bool) && MEMORY_DATABASE_PATH != dbpath
 	}
-	if dbpath == "" {
-		log.Printf(errorFormat, "invalid dbpath")
-		return nil, errors.New("invalid dbpath")
-	}
-	log.Println("dbpath=", dbpath)
 	if readOnly {
 		log.Printf(errorFormat, "readonly not supported")
 	}
-	if MEMORY_DATABASE_PATH != dbpath {
-		err = os.MkdirAll(path.Dir(dbpath), 0755)
+	if MEMORY_DATABASE_PATH != dbPathWithoutParams {
+		err = os.MkdirAll(path.Dir(dbPathWithoutParams), 0755)
 		if err != nil {
-			log.Printf(errorFormat, err.Error())
+			return nil, newError(err.Error())
 		}
 	}
 	if singleInstance {
-		dbId, ok := p.getDatabaseByPath(dbpath)
+		dbId, ok := p.getDatabaseByPath(dbPathWithoutParams)
 		if ok {
 			return map[interface{}]interface{}{
 				PARAM_ID:        dbId,
@@ -237,8 +247,10 @@ func (p *SqflitePlugin) handleOpenDatabase(arguments interface{}) (reply interfa
 			}, nil
 		}
 	}
+
+	// dbpath is supposed to contain _key parameter, or the db will fail to open
+	dbpath = dbPathWithoutParams + dbKey + dbParams
 	var engine *sql.DB
-	// dbpath is expected to end with ?_key=some_key
 	engine, err = sql.Open("sqlite3", dbpath)
 	if err != nil {
 		return nil, err
@@ -247,7 +259,7 @@ func (p *SqflitePlugin) handleOpenDatabase(arguments interface{}) (reply interfa
 	defer p.Unlock()
 	p.databaseId++
 	p.databases[p.databaseId] = engine
-	p.databasePaths[p.databaseId] = dbpath
+	p.databasePaths[p.databaseId] = dbPathWithoutParams
 	return map[interface{}]interface{}{
 		PARAM_ID:        p.databaseId,
 		PARAM_RECOVERED: false,
@@ -278,24 +290,27 @@ func (p *SqflitePlugin) handleBatch(arguments interface{}) (reply interface{}, e
 	if err != nil {
 		return nil, err
 	}
-	args, ok := arguments.(map[string]interface{})
+	args, ok := arguments.(map[interface{}]interface{})
 	if !ok {
-		fmt.Println("--- %v", reflect.TypeOf(arguments).String())
-		return nil, errors.New(fmt.Sprintf("invalid args %T: %+v", arguments, arguments))
+		return nil, errors.New(fmt.Sprintf("invalid args: %T", arguments))
 	}
 	ioperations, ok := args[PARAM_OPERATIONS]
 	if !ok {
-		return nil, errors.New("invalid operation")
+		return nil, errors.New("operation key not found")
 	}
-	operations, ok := ioperations.([]map[string]interface{})
+	operations, ok := ioperations.([]interface{})
 	if !ok {
-		return nil, errors.New("invalid operation data format")
+		return nil, errors.New(fmt.Sprintf("invalid operations data format: a list is expected, got %T", ioperations))
 	}
 	if err != nil {
 		return nil, err
 	}
 	for _, operate := range operations {
-		mtd, ok := operate[PARAM_METHOD]
+		params, ok := operate.(map[interface{}]interface{})
+		if !ok {
+			return nil, errors.New("invalid operations data format: a list of maps is expected")
+		}
+		mtd, ok := params[PARAM_METHOD]
 		if !ok {
 			return nil, errors.New("empty method")
 		}
@@ -417,7 +432,7 @@ func (p *SqflitePlugin) handleQuery(arguments interface{}) (reply interface{}, e
 		}
 		var resultRow []interface{}
 		dest := make([]interface{}, len(cols))
-		for k, _ := range cols {
+		for k := range cols {
 			var ignore interface{}
 			dest[k] = &ignore
 		}
@@ -513,4 +528,9 @@ func (p *SqflitePlugin) getSqlCommand(arguments interface{}) (sqlStr string, xar
 		xargs, _ = targs.([]interface{})
 	}
 	return
+}
+
+func newError(message string) error {
+	log.Printf(errorFormat, message)
+	return errors.New(message)
 }
