@@ -42,13 +42,12 @@ func GetWindowText(hwnd HWND) string {
 func GetWindowHandle() (result uintptr) {
 	result = 0
 	var prevWindow HWND = 0
-	var found bool = false
-	process_id, _, err := pGetCurrentProcessId.Call()
-	if process_id == 0 {
+	processId, _, err := pGetCurrentProcessId.Call()
+	if processId == 0 {
 		log.Printf("Cannot get current process id: %v", err)
 		return
 	}
-	log.Printf("Current process ID: %v", process_id)
+	log.Printf("Current process ID: %v", processId)
 	desktopWindow, err := GetDesktopWindow()
 	if err != nil {
 		log.Printf("Desktop Window error: %s", err)
@@ -56,7 +55,7 @@ func GetWindowHandle() (result uintptr) {
 	}
 	log.Printf("Desktop Window handle: %v", desktopWindow)
 
-	for i := 0; i < 100 && !found; i++ {
+	for i := 0; i < 100; i++ {
 		nextWindow, _, _ := pFindWindowEx.Call(uintptr(desktopWindow), uintptr(prevWindow), 0, 0)
 		if nextWindow == 0 {
 			log.Printf("NextWindow error: %s", err)
@@ -70,20 +69,19 @@ func GetWindowHandle() (result uintptr) {
 			break
 		}
 		//log.Printf("R1, ProcessId: %v, %v", r1, cpid)
-		if cpid == process_id {
-			window_text := GetWindowText(HWND(nextWindow))
-			log.Printf("FOUND: %v, %s", cpid, window_text)
+		if cpid == processId {
+			windowText := GetWindowText(HWND(nextWindow))
+			log.Printf("FOUND: %v, %s", cpid, windowText)
 			isw, _, _ := pIsWindow.Call(uintptr(nextWindow))
 			log.Printf("Is Window: %v", isw)
-			hasp, _, _ := pGetParent.Call(uintptr(nextWindow))
-			log.Printf("Parent: %v", hasp)
-			if (hasp == 0) && (window_text != "") {
-				log.Printf("Proper Window: %s", window_text)
+			parentHandle, _, _ := pGetParent.Call(uintptr(nextWindow))
+			log.Printf("Parent: %v", parentHandle)
+			if (parentHandle == 0) && (windowText != "") {
+				log.Printf("Proper Window: %s", windowText)
 				return nextWindow
 			}
 		}
 		prevWindow = HWND(nextWindow)
-
 	}
 	return
 }
