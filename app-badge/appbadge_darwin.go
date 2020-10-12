@@ -37,6 +37,8 @@ platformSetBadge(int* value) {
 	NSString* str;
 	if (*value == 0) {
  		str = @"";
+	} else if (*value > 99) {
+		str = @"99+";
 	} else {
 		str = [NSString stringWithFormat:@"%i", *value];
 	}
@@ -47,7 +49,6 @@ platformSetBadge(int* value) {
 import "C"
 import (
 	"fmt"
-	"unsafe"
 )
 
 type AppBadgeDarwin struct{}
@@ -61,15 +62,17 @@ func (*AppBadgeDarwin) SetBadge(value int32) (err error) {
 		}
 	}()
 
+	// FIXME disabled because of the "should be on the main thread" exception
 	// get current title
-	gs := C.GoString(C.platformGetWindowTitle())
+	// gs := C.GoString(C.platformGetWindowTitle())
 
 	// create new title with counter
-	cs2 := C.CString(formatWindowTitle(gs, value))
-	defer C.free(unsafe.Pointer(cs2))
+	// cs2 := C.CString(formatWindowTitle(gs, value))
+	// defer C.free(unsafe.Pointer(cs2))
 
 	// set new title
-	C.platformSetWindowTitle(cs2)
+	// FIXME disabled because of the "should be on the main thread" exception
+	// C.platformSetWindowTitle(cs2)
 
 	// Set badge number
 	v := C.int(value)

@@ -1,1 +1,0 @@
-# sqlcipher for go-flutter
