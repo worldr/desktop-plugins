@@ -36,6 +36,11 @@ func SetWindowText(hwnd helpers.HWND, txt string) string {
 	s, _ := windows.UTF16PtrFromString(txt)
 	textLen := len(txt)
 
+	if textLen == 0 {
+		log.Printf("Zero length string: %s", txt)
+		return ""
+	}
+
 	buf := make([]uint16, textLen)
 	pSetWindowTitle.Call(
 		uintptr(hwnd),

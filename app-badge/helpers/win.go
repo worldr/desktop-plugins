@@ -13,6 +13,7 @@ var (
 	pGetWindowTitle           = u32.NewProc("GetWindowTextW")
 	pSetWindowTitle           = u32.NewProc("SetWindowTextW")
 	pIsWindow                 = u32.NewProc("IsWindow")
+	pIsWindowVisible          = u32.NewProc("IsWindowVisible")
 	pGetParent                = u32.NewProc("GetParent")
 	pGetCurrentProcessId      = k32.NewProc("GetCurrentProcessId")
 	pGetDesktopWindow         = u32.NewProc("GetDesktopWindow")
@@ -55,7 +56,8 @@ func GetWindowHandle() (result uintptr) {
 	}
 	log.Printf("Desktop Window handle: %v", desktopWindow)
 
-	for i := 0; i < 100; i++ {
+	for i := 0; i < 200; i++ {
+		log.Printf("I: %v", i)
 		nextWindow, _, _ := pFindWindowEx.Call(uintptr(desktopWindow), uintptr(prevWindow), 0, 0)
 		if nextWindow == 0 {
 			log.Printf("NextWindow error: %s", err)
@@ -76,7 +78,9 @@ func GetWindowHandle() (result uintptr) {
 			log.Printf("Is Window: %v", isw)
 			parentHandle, _, _ := pGetParent.Call(uintptr(nextWindow))
 			log.Printf("Parent: %v", parentHandle)
-			if (parentHandle == 0) && (windowText != "") {
+			isVisible, _, _ := pIsWindowVisible.Call(uintptr(nextWindow))
+			log.Printf("IsVisible: %v", isVisible)
+			if (parentHandle == 0) && (windowText != "") && isVisible != 0 {
 				log.Printf("Proper Window: %s", windowText)
 				return nextWindow
 			}
