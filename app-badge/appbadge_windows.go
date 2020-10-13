@@ -6,6 +6,7 @@ import (
 	"golang.org/x/sys/windows"
 	"log"
 	"regexp"
+	"strconv"
 	"syscall"
 )
 
@@ -15,9 +16,10 @@ import (
 )
 
 var (
-	u32             = windows.NewLazySystemDLL("user32.dll")
-	pSetWindowTitle = u32.NewProc("SetWindowTextW")
-	pFlash          = u32.NewProc("FlashWindow")
+	u32                     = windows.NewLazySystemDLL("user32.dll")
+	pSetWindowTitle         = u32.NewProc("SetWindowTextW")
+	pFlash                  = u32.NewProc("FlashWindow")
+	windowHandle    uintptr = 0
 )
 
 type AppBadgeWindows struct{}
@@ -52,26 +54,46 @@ func SetWindowText(hwnd helpers.HWND, txt string) string {
 }
 
 func (me *AppBadgeWindows) SetBadge(value int32) error {
-	handle := helpers.GetWindowHandle()
-	if handle == 0 {
+	log.Printf("------ SET BADGE: %v ------", value)
+	if windowHandle == 0 {
+		windowHandle = helpers.GetWindowHandle()
+	}
+	if windowHandle == 0 {
+		log.Printf("Window not found")
 		return nil
 	}
-	currentText := helpers.GetWindowText(helpers.HWND(handle))
+	currentText := helpers.GetWindowText(windowHandle)
+	nr, _ := regexp.Compile(`^.+\((\d+)\)$`)
+	currentValue, convErr := strconv.Atoi(nr.ReplaceAllString(currentText, "$1"))
+	if convErr != nil {
+		currentValue = 0
+		log.Printf("Cannot convert current: %s, (%v)", currentText, convErr)
+	}
+	log.Printf("Current value: %v", int32(currentValue))
 	r, _ := regexp.Compile("^([^ ]+).*$")
 	if value != 0 {
-		SetWindowText(helpers.HWND(handle), fmt.Sprintf(r.ReplaceAllString(currentText, "$1")+" (%v)", value))
-		f := handler{is: func(b bool) *bool { return &b }(true)}
-		pFlash.Call(uintptr(handle), uintptr(unsafe.Pointer(&f.is)))
+		SetWindowText(helpers.HWND(windowHandle), fmt.Sprintf(r.ReplaceAllString(currentText, "$1")+" (%v)", value))
+		if value > int32(currentValue) {
+			f := handler{is: func(b bool) *bool { return &b }(true)}
+			pFlash.Call(windowHandle, uintptr(unsafe.Pointer(&f.is)))
+		}
 	}
 
 	return nil
 }
 
 func (me *AppBadgeWindows) ClearBadge() error {
-	handle := helpers.GetWindowHandle()
-	currentText := helpers.GetWindowText(helpers.HWND(handle))
+	log.Printf("====== CLEAR BADGE ======")
+	if windowHandle == 0 {
+		windowHandle = helpers.GetWindowHandle()
+	}
+	if windowHandle == 0 {
+		log.Printf("Window not found")
+		return nil
+	}
+	currentText := helpers.GetWindowText(windowHandle)
 	r, _ := regexp.Compile("^([^ ]+).*$")
-	SetWindowText(helpers.HWND(handle), r.ReplaceAllString(currentText, "$1"))
+	SetWindowText(helpers.HWND(windowHandle), r.ReplaceAllString(currentText, "$1"))
 	return nil
 }
 

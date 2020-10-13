@@ -13,6 +13,7 @@ var (
 	pGetWindowTitle           = u32.NewProc("GetWindowTextW")
 	pSetWindowTitle           = u32.NewProc("SetWindowTextW")
 	pIsWindow                 = u32.NewProc("IsWindow")
+	pIsIconic                 = u32.NewProc("IsIconic")
 	pIsWindowVisible          = u32.NewProc("IsWindowVisible")
 	pGetParent                = u32.NewProc("GetParent")
 	pGetCurrentProcessId      = k32.NewProc("GetCurrentProcessId")
@@ -28,12 +29,12 @@ type (
 	DWORD  uint32
 )
 
-func GetWindowText(hwnd HWND) string {
+func GetWindowText(hwnd uintptr) string {
 	textLen := 32
 
 	buf := make([]uint16, textLen)
 	pGetWindowTitle.Call(
-		uintptr(hwnd),
+		hwnd,
 		uintptr(unsafe.Pointer(&buf[0])),
 		uintptr(textLen))
 
@@ -42,7 +43,7 @@ func GetWindowText(hwnd HWND) string {
 
 func GetWindowHandle() (result uintptr) {
 	result = 0
-	var prevWindow HWND = 0
+	var prevWindow uintptr = 0
 	processId, _, err := pGetCurrentProcessId.Call()
 	if processId == 0 {
 		log.Printf("Cannot get current process id: %v", err)
@@ -56,14 +57,12 @@ func GetWindowHandle() (result uintptr) {
 	}
 	log.Printf("Desktop Window handle: %v", desktopWindow)
 
-	for i := 0; i < 200; i++ {
-		log.Printf("I: %v", i)
-		nextWindow, _, _ := pFindWindowEx.Call(uintptr(desktopWindow), uintptr(prevWindow), 0, 0)
+	for i := 0; i < 2000; i++ {
+		nextWindow, _, _ := pFindWindowEx.Call(uintptr(desktopWindow), prevWindow, 0, 0)
 		if nextWindow == 0 {
 			log.Printf("NextWindow error: %s", err)
 			break
 		}
-		//log.Printf("NextWindow handle: %v (%s)", nextWindow, GetWindowText(HWND(nextWindow)))
 		var cpid uintptr
 		r1, _, _ := pGetWindowThreadProcessId.Call(nextWindow, uintptr(unsafe.Pointer(&cpid)))
 		if r1 == 0 {
@@ -72,20 +71,22 @@ func GetWindowHandle() (result uintptr) {
 		}
 		//log.Printf("R1, ProcessId: %v, %v", r1, cpid)
 		if cpid == processId {
-			windowText := GetWindowText(HWND(nextWindow))
+			windowText := GetWindowText(nextWindow)
 			log.Printf("FOUND: %v, %s", cpid, windowText)
-			isw, _, _ := pIsWindow.Call(uintptr(nextWindow))
+			isw, _, _ := pIsWindow.Call(nextWindow)
 			log.Printf("Is Window: %v", isw)
-			parentHandle, _, _ := pGetParent.Call(uintptr(nextWindow))
+			parentHandle, _, _ := pGetParent.Call(nextWindow)
 			log.Printf("Parent: %v", parentHandle)
-			isVisible, _, _ := pIsWindowVisible.Call(uintptr(nextWindow))
-			log.Printf("IsVisible: %v", isVisible)
+			isVisible, _, _ := pIsWindowVisible.Call(nextWindow)
+			log.Printf("Is Visible: %v", isVisible)
+			isIconic, _, _ := pIsIconic.Call(nextWindow)
+			log.Printf("Is Iconic: %v", isIconic)
 			if (parentHandle == 0) && (windowText != "") && isVisible != 0 {
 				log.Printf("Proper Window: %s", windowText)
 				return nextWindow
 			}
 		}
-		prevWindow = HWND(nextWindow)
+		prevWindow = nextWindow
 	}
 	return
 }
