@@ -4,14 +4,12 @@ import (
 	"fmt"
 	"github.com/worldr/desktop-plugins/app-badge/helpers"
 	"golang.org/x/sys/windows"
-	"log"
 	"regexp"
 	"strconv"
 	"syscall"
 )
 
 import (
-	"os"
 	"unsafe"
 )
 
@@ -39,7 +37,7 @@ func SetWindowText(hwnd helpers.HWND, txt string) string {
 	textLen := len(txt)
 
 	if textLen == 0 {
-		log.Printf("Zero length string: %s", txt)
+		//log.Printf("Zero length string: %s", txt)
 		return ""
 	}
 
@@ -54,12 +52,12 @@ func SetWindowText(hwnd helpers.HWND, txt string) string {
 }
 
 func (me *AppBadgeWindows) SetBadge(value int32) error {
-	log.Printf("------ SET BADGE: %v ------", value)
+	//log.Printf("------ SET BADGE: %v ------", value)
 	if windowHandle == 0 {
 		windowHandle = helpers.GetWindowHandle()
 	}
 	if windowHandle == 0 {
-		log.Printf("Window not found")
+		//log.Printf("Window not found")
 		return nil
 	}
 	currentText := helpers.GetWindowText(windowHandle)
@@ -67,9 +65,9 @@ func (me *AppBadgeWindows) SetBadge(value int32) error {
 	currentValue, convErr := strconv.Atoi(nr.ReplaceAllString(currentText, "$1"))
 	if convErr != nil {
 		currentValue = 0
-		log.Printf("Cannot convert current: %s, (%v)", currentText, convErr)
+		//log.Printf("Cannot convert current: %s, (%v)", currentText, convErr)
 	}
-	log.Printf("Current value: %v", int32(currentValue))
+	//log.Printf("Current value: %v", int32(currentValue))
 	r, _ := regexp.Compile("^([^ ]+).*$")
 	if value != 0 {
 		SetWindowText(helpers.HWND(windowHandle), fmt.Sprintf(r.ReplaceAllString(currentText, "$1")+" (%v)", value))
@@ -83,12 +81,12 @@ func (me *AppBadgeWindows) SetBadge(value int32) error {
 }
 
 func (me *AppBadgeWindows) ClearBadge() error {
-	log.Printf("====== CLEAR BADGE ======")
+	//log.Printf("====== CLEAR BADGE ======")
 	if windowHandle == 0 {
 		windowHandle = helpers.GetWindowHandle()
 	}
 	if windowHandle == 0 {
-		log.Printf("Window not found")
+		//log.Printf("Window not found")
 		return nil
 	}
 	currentText := helpers.GetWindowText(windowHandle)
@@ -98,12 +96,12 @@ func (me *AppBadgeWindows) ClearBadge() error {
 }
 
 func init() {
-	f, err := os.OpenFile("log.txt", os.O_TRUNC|os.O_CREATE, 0666)
-	if err != nil {
-		log.Printf("Cannot open logfilw")
-		os.Exit(1)
-	}
-	log.SetOutput(f)
+	//f, err := os.OpenFile("log.txt", os.O_TRUNC|os.O_CREATE, 0666)
+	//if err != nil {
+	//log.Printf("Cannot open logfilw")
+	//os.Exit(1)
+	//}
+	//log.SetOutput(f)
 
 	Api = &AppBadgeWindows{}
 }

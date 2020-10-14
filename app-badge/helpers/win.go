@@ -2,7 +2,7 @@ package helpers
 
 import (
 	"golang.org/x/sys/windows"
-	"log"
+	//"log"
 	"syscall"
 	"unsafe"
 )
@@ -46,43 +46,43 @@ func GetWindowHandle() (result uintptr) {
 	var prevWindow uintptr = 0
 	processId, _, err := pGetCurrentProcessId.Call()
 	if processId == 0 {
-		log.Printf("Cannot get current process id: %v", err)
+		//log.Printf("Cannot get current process id: %v", err)
 		return
 	}
-	log.Printf("Current process ID: %v", processId)
+	//log.Printf("Current process ID: %v", processId)
 	desktopWindow, err := GetDesktopWindow()
 	if err != nil {
-		log.Printf("Desktop Window error: %s", err)
+		//log.Printf("Desktop Window error: %s", err)
 		return
 	}
-	log.Printf("Desktop Window handle: %v", desktopWindow)
+	//log.Printf("Desktop Window handle: %v", desktopWindow)
 
 	for i := 0; i < 2000; i++ {
 		nextWindow, _, _ := pFindWindowEx.Call(uintptr(desktopWindow), prevWindow, 0, 0)
 		if nextWindow == 0 {
-			log.Printf("NextWindow error: %s", err)
+			//log.Printf("NextWindow error: %s", err)
 			break
 		}
 		var cpid uintptr
 		r1, _, _ := pGetWindowThreadProcessId.Call(nextWindow, uintptr(unsafe.Pointer(&cpid)))
 		if r1 == 0 {
-			log.Printf("Cannot get process id of %v", nextWindow)
+			//log.Printf("Cannot get process id of %v", nextWindow)
 			break
 		}
 		//log.Printf("R1, ProcessId: %v, %v", r1, cpid)
 		if cpid == processId {
 			windowText := GetWindowText(nextWindow)
-			log.Printf("FOUND: %v, %s", cpid, windowText)
-			isw, _, _ := pIsWindow.Call(nextWindow)
-			log.Printf("Is Window: %v", isw)
+			//log.Printf("FOUND: %v, %s", cpid, windowText)
+			//isw, _, _ := pIsWindow.Call(nextWindow)
+			//log.Printf("Is Window: %v", isw)
 			parentHandle, _, _ := pGetParent.Call(nextWindow)
-			log.Printf("Parent: %v", parentHandle)
+			//log.Printf("Parent: %v", parentHandle)
 			isVisible, _, _ := pIsWindowVisible.Call(nextWindow)
-			log.Printf("Is Visible: %v", isVisible)
-			isIconic, _, _ := pIsIconic.Call(nextWindow)
-			log.Printf("Is Iconic: %v", isIconic)
+			//log.Printf("Is Visible: %v", isVisible)
+			//isIconic, _, _ := pIsIconic.Call(nextWindow)
+			//log.Printf("Is Iconic: %v", isIconic)
 			if (parentHandle == 0) && (windowText != "") && isVisible != 0 {
-				log.Printf("Proper Window: %s", windowText)
+				//log.Printf("Proper Window: %s", windowText)
 				return nextWindow
 			}
 		}
@@ -93,8 +93,5 @@ func GetWindowHandle() (result uintptr) {
 
 func GetDesktopWindow() (h windows.Handle, err error) {
 	wh, _, err := pGetDesktopWindow.Call()
-	//if err != nil {
-	//	log.Printf("Cannot get desktop window: %s", err)
-	//}
 	return windows.Handle(wh), nil
 }
