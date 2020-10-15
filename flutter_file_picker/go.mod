@@ -1,4 +1,4 @@
-module github.com/miguelpruivo/flutter_file_picker/go
+module github.com/worldr/desktop-plugins/flutter_file_picker
 
 go 1.13
 
